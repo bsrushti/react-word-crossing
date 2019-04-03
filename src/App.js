@@ -1,27 +1,85 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import "./App.css";
+import Letters from "./Letters";
+import LetterHolders from "./LetterHolders";
 
 class App extends Component {
-  render() {
+  constructor(props) {
+    super(props);
+    this.collectionOfWords = ["BACK"];
+    this.word = "";
+  }
+
+  drag(e) {
+    e.dataTransfer.setData("Text", e.target.id);
+  }
+
+  drop(e) {
+    let data = e.dataTransfer.getData("Text");
+    e.target.appendChild(document.getElementById(data));
+    if (this.isWordsPlaced() && this.checkWord()) {
+      document.getElementById("status").innerText = "Correct Word!!";
+    } else if (this.isWordsPlaced() && !this.checkWord()) {
+      document.getElementById("status").innerText = "Oops Wrong Word!";
+    }
+  }
+
+  checkWord() {
+    let word = "";
+    let wordContainer = document.getElementById("word-container");
+    for (let i = 0; i < wordContainer.childNodes.length; i++) {
+      word += wordContainer.childNodes[i].firstChild.innerText;
+    }
+    return this.collectionOfWords.includes(word);
+  }
+
+  isWordsPlaced() {
+    let flag = false;
+    let wordContainer = document.getElementById("word-container");
+    for (let i = 0; i < wordContainer.childNodes.length; i++) {
+      flag = wordContainer.childNodes[i].firstChild !== null;
+    }
+    return flag;
+  }
+
+  allowDrop(e) {
+    e.preventDefault();
+  }
+
+  renderLetterHolders(numberOfBox) {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
+      <LetterHolders
+        numberOfBox={numberOfBox}
+        id="box"
+        className="square"
+        onDrop={this.drop.bind(this)}
+        onDragOver={this.allowDrop.bind(this)}
+      />
+    );
+  }
+
+  renderLetters() {
+    return <Letters word="KABC" drag={this.drag.bind(this)} />;
+  }
+
+  game() {
+    return (
+      <div className="Game">
+        <div className="status" id="status" />
+        <div id="">
+          <div className="word-container" style={{ width: 300 }}>
+            {this.renderLetters()}
+          </div>
+          <div className="box" id="word-container">
+            {this.renderLetterHolders(4)}
+          </div>
+        </div>
       </div>
     );
+  }
+
+  render() {
+    return <div> {this.game()}</div>;
   }
 }
 
